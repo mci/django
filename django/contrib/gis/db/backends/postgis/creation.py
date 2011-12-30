@@ -3,7 +3,6 @@ from django.db.backends.postgresql.creation import DatabaseCreation
 
 class PostGISCreation(DatabaseCreation):
     geom_index_type = 'GIST'
-    geom_index_opts = 'GIST_GEOMETRY_OPS'
 
     def sql_indexes_for_field(self, model, f, style):
         "Return any spatial index creation SQL for the field."
@@ -42,17 +41,14 @@ class PostGISCreation(DatabaseCreation):
             if f.spatial_index:
                 # Spatial indexes created the same way for both Geometry and
                 # Geography columns
-                if f.geography:
-                    index_opts = ''
-                else:
-                    index_opts = ' ' + style.SQL_KEYWORD(self.geom_index_opts)
+                
                 output.append(style.SQL_KEYWORD('CREATE INDEX ') +
                               style.SQL_TABLE(qn('%s_%s_id' % (db_table, f.column))) +
                               style.SQL_KEYWORD(' ON ') +
                               style.SQL_TABLE(qn(db_table)) +
                               style.SQL_KEYWORD(' USING ') +
                               style.SQL_COLTYPE(self.geom_index_type) + ' ( ' +
-                              style.SQL_FIELD(qn(f.column)) + index_opts + ' );')
+                              style.SQL_FIELD(qn(f.column)) + ' );')
         return output
 
     def sql_table_creation_suffix(self):
